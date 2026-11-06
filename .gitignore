@@ -11,3 +11,5 @@ dist/
 # Logs & OS
 *.log
 .DS_Store
+# Contexte agent (local uniquement, non publié)
+AGENTS.md
