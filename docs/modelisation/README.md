@@ -67,6 +67,18 @@ plantuml -tpng -o img docs/modelisation/*.puml
 | Séquence | Qui appelle qui ? | Message | Controller → UseCase → Simulateur → Mongo |
 | États-transitions | Quels cycles de vie ? | État | Conteneur (bateau), Progression |
 
+## Décisions de modélisation
+
+Choix retenus (simples et efficaces pour MongoDB sur un périmètre de 2 mois) :
+
+1. **Achievements → tableau embarqué** dans `joueurs` (`achievements[]`), le catalogue restant
+   dans la collection `achievements`. Peu nombreux, lus avec le profil, écrits rarement : pas de
+   collection de jonction ni de jointure.
+2. **Une épreuve chronométrée est un Niveau** de `type = EPREUVE` (discriminateur), pas une
+   entité séparée. Les `scores` référencent directement `niveauId`. Une entité en moins.
+3. **Pas d'acteur Admin.** Les niveaux et épreuves sont des **données** (seeding par les devs),
+   hors du périmètre runtime du jeu. Acteurs = `Visiteur`, `Joueur` (+ `MongoDB` en support).
+
 ## Notes transverses
 
 - **Aucun vrai Docker n'est exécuté** : le « Simulateur » tient un état fictif et répond comme Docker, erreurs comprises.

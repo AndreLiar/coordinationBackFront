@@ -13,8 +13,7 @@ erDiagram
     STAGE  ||--o{ CHAPITRE : "contient"
     CHAPITRE ||--o{ NIVEAU : "regroupe"
     JOUEUR ||--o{ SCORE_EPREUVE : "réalise"
-    EPREUVE ||--o{ SCORE_EPREUVE : "reçoit"
-    NIVEAU ||--o| EPREUVE : "sert de base à"
+    NIVEAU ||--o{ SCORE_EPREUVE : "chronométré dans"
     JOUEUR }o--o{ ACHIEVEMENT : "débloque"
 
     JOUEUR {
@@ -26,6 +25,7 @@ erDiagram
     CHAPITRE { int numero  string titre }
     NIVEAU {
         int ordre
+        string type
         string consigne
         json etatInitial
         json conditionsReussite
@@ -36,17 +36,16 @@ erDiagram
         int nbEssais
         int nbIndices
     }
-    EPREUVE { string titre }
     SCORE_EPREUVE { int tempsMs  int score }
     ACHIEVEMENT { string code  string titre }
 ```
 
-**Règles métier (à valider avant implémentation) :**
+**Règles métier (décisions retenues) :**
 
 - Un **Joueur** a 0..N **Progressions** ; chaque Progression appartient à **exactement 1** Joueur et **1** Niveau.
 - Un **Stage** contient plusieurs **Chapitres** ; un Chapitre regroupe plusieurs **Niveaux** (débloqués dans l'ordre).
-- Un **Joueur** peut débloquer plusieurs **Achievements** (relation N..N → collection de jonction ou tableau de refs).
-- Une **Épreuve** s'appuie généralement sur un **Niveau** « cassé à réparer ».
+- Un **Joueur** peut débloquer plusieurs **Achievements** → stockés en **tableau embarqué** dans `joueurs` (voir § 3.3), le catalogue restant dans `achievements`.
+- Une **épreuve chronométrée** n'est **pas une entité séparée** : c'est un **Niveau** de `type = EPREUVE`. Les `SCORE_EPREUVE` référencent donc directement le **Niveau**.
 
 ## 3.2 Diagramme de classes UML (niveau application / domaine)
 
@@ -78,12 +77,26 @@ classDiagram
     class Niveau {
         +id: string
         +ordre: int
+        +type: TypeNiveau
         +consigne: string
         +etatInitial: EtatPort
         +conditionsReussite: Objectif[]
         +indices: Indice[]
         +verifierObjectif(etat) bool
         +calculerEtoiles(essais, indices) int
+    }
+
+    class ScoreEpreuve {
+        +id: string
+        +tempsMs: int
+        +score: int
+        +date: Date
+    }
+
+    class TypeNiveau {
+        <<enumeration>>
+        CAMPAGNE
+        EPREUVE
     }
 
     class EtatPort {
@@ -120,6 +133,9 @@ classDiagram
     EtatPort "1" *-- "0..*" Volume
     EtatPort "1" *-- "0..*" Reseau
     Joueur "0..*" --> "0..*" Achievement : débloque
+    Joueur "1" --> "0..*" ScoreEpreuve : réalise
+    Niveau "1" --> "0..*" ScoreEpreuve : chronométré dans
+    Niveau ..> TypeNiveau
 ```
 
 - **Composition** (`*--`) : un `EtatPort` **possède** ses conteneurs/volumes/réseaux — ils n'existent pas hors de l'état de la partie (dépendance de cycle de vie).
@@ -133,14 +149,16 @@ quelques documents **embarqués** quand les données sont lues ensemble.
 
 | Collection | Contenu | Références |
 | --- | --- | --- |
-| `joueurs` | pseudo, email, `motDePasseHash`, dates | — |
-| `niveaux` | `chapitreId`, ordre, consigne, `etatInitial`, `conditionsReussite`, `indices[]`, `dialogues[]` | `chapitreId` |
+| `joueurs` | pseudo, email, `motDePasseHash`, dates, **`achievements[]`** (embarqué `{ code, dateObtention }`) | — |
+| `niveaux` | `chapitreId`, ordre, **`type`** (`CAMPAGNE`/`EPREUVE`), consigne, `etatInitial`, `conditionsReussite`, `indices[]`, `dialogues[]`, `epreuve?` (barème/pénalité si `type=EPREUVE`) | `chapitreId` |
 | `chapitres` | `stageId`, numero, titre | `stageId` |
 | `progressions` | `joueurId`, `niveauId`, statut, etoiles, nbEssais, nbIndices, meilleurTempsMs | `joueurId`, `niveauId` |
-| `epreuves` | `niveauId`, titre, règles de score | `niveauId` |
-| `scores` | `joueurId`, `epreuveId`, tempsMs, score, date | `joueurId`, `epreuveId` |
-| `achievements` | code, titre, condition | — |
-| `joueurs.achievements[]` | tableau embarqué `{ code, dateObtention }` dans `joueurs` | — |
+| `scores` | `joueurId`, **`niveauId`**, tempsMs, score, date | `joueurId`, `niveauId` |
+| `achievements` | code, titre, condition *(catalogue)* | — |
+
+> **Décisions retenues** : les achievements débloqués sont **embarqués** dans `joueurs` (peu
+> nombreux, lus avec le profil) ; une **épreuve est un niveau** `type = EPREUVE` → pas de
+> collection `epreuves`, et `scores` pointe directement sur `niveauId`.
 
 Exemple de document `niveaux` (**le niveau est une donnée, pas du code** — ajouter un niveau
 = ajouter un document, sans toucher au simulateur) :
@@ -150,6 +168,7 @@ Exemple de document `niveaux` (**le niveau est une donnée, pas du code** — aj
   "_id": "n-ch1-02",
   "chapitreId": "ch-1",
   "ordre": 2,
+  "type": "CAMPAGNE",
   "titre": "Premier bateau",
   "consigne": "Lance un conteneur nginx nommé 'site'.",
   "etatInitial": { "images": [{ "nom": "nginx", "tag": "latest" }],

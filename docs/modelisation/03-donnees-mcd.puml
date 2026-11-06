@@ -22,6 +22,7 @@ entity "CHAPITRE" as CHAPITRE {
 }
 entity "NIVEAU" as NIVEAU {
   * ordre
+  type
   consigne
   etatInitial
   conditionsReussite
@@ -31,9 +32,6 @@ entity "PROGRESSION" as PROGRESSION {
   etoiles
   nbEssais
   nbIndices
-}
-entity "EPREUVE" as EPREUVE {
-  titre
 }
 entity "SCORE_EPREUVE" as SCORE {
   tempsMs
@@ -50,9 +48,15 @@ NIVEAU   ||--o{ PROGRESSION : "est joué dans"
 STAGE    ||--o{ CHAPITRE    : contient
 CHAPITRE ||--o{ NIVEAU      : regroupe
 JOUEUR   ||--o{ SCORE       : réalise
-EPREUVE  ||--o{ SCORE       : reçoit
-NIVEAU   ||--o| EPREUVE     : "sert de base à"
+NIVEAU   ||--o{ SCORE       : "chronométré dans"
 JOUEUR   }o--o{ ACHIEVEMENT : débloque
+
+note right of NIVEAU
+  type = CAMPAGNE | EPREUVE.
+  Une épreuve chronométrée est
+  simplement un niveau de type
+  EPREUVE (pas d'entité séparée).
+end note
 
 note bottom of PROGRESSION
   Un Joueur a 0..N Progressions ;
