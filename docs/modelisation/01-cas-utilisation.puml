@@ -1,0 +1,62 @@
+@startuml cas-utilisation
+' Diagramme de cas d'utilisation — Docker Harbor (notation UML stricte)
+' Rendu : plantuml 01-cas-utilisation.puml  (ou extension VS Code PlantUML)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+title Cas d'utilisation — Docker Harbor
+
+actor "Visiteur" as Visiteur
+actor "Joueur" as Joueur
+actor "MongoDB" as DB << système >>
+
+' Généralisation : tout Joueur est aussi un Visiteur
+Joueur --|> Visiteur
+
+rectangle "Système — Docker Harbor" {
+  usecase UC_insc       as "S'inscrire"
+  usecase UC_conn       as "Se connecter"
+
+  usecase UC_jouer      as "Jouer un niveau"
+  usecase UC_cmd        as "Exécuter une\ncommande simulée"
+  usecase UC_valid      as "Vérifier l'objectif\ndu niveau"
+  usecase UC_indice     as "Demander un indice"
+  usecase UC_editer     as "Éditer un fichier\n(Dockerfile / compose)"
+
+  usecase UC_epreuve    as "Jouer une épreuve\nchronométrée"
+  usecase UC_score      as "Calculer le score\n/ le temps"
+  usecase UC_classement as "Consulter le classement"
+
+  usecase UC_profil     as "Consulter son profil\n& sa progression"
+  usecase UC_achiev     as "Débloquer un\nachievement"
+}
+
+' Associations acteur <-> cas
+Visiteur -- UC_insc
+Visiteur -- UC_conn
+
+Joueur -- UC_jouer
+Joueur -- UC_indice
+Joueur -- UC_editer
+Joueur -- UC_epreuve
+Joueur -- UC_classement
+Joueur -- UC_profil
+
+' include = comportement obligatoire réutilisé
+UC_jouer   ..> UC_cmd   : <<include>>
+UC_jouer   ..> UC_valid : <<include>>
+UC_epreuve ..> UC_cmd   : <<include>>
+UC_epreuve ..> UC_score : <<include>>
+
+' extend = comportement conditionnel / optionnel (l'extension pointe vers le cas de base)
+UC_indice ..> UC_jouer : <<extend>>
+UC_editer ..> UC_jouer : <<extend>>
+UC_achiev ..> UC_jouer : <<extend>>
+
+' Acteur secondaire : persistance
+UC_valid -- DB
+UC_score -- DB
+UC_profil -- DB
+
+@enduml

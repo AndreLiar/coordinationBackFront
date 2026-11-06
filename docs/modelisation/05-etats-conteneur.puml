@@ -1,0 +1,36 @@
+@startuml etats-conteneur
+' Machine à états — cycle de vie d'un Conteneur (bateau) simulé
+' Rendu : plantuml 05-etats-conteneur.puml
+
+skinparam shadowing false
+title États-transitions — Conteneur (bateau)
+
+[*] --> Cree : docker create
+[*] --> EnMarche : docker run (-d)
+
+Cree --> EnMarche : docker start
+EnMarche --> Arrete : docker stop
+Arrete --> EnMarche : docker start
+EnMarche --> EnMarche : docker restart
+
+Cree --> Supprime : docker rm
+Arrete --> Supprime : docker rm
+EnMarche --> Supprime : docker rm -f
+
+Supprime --> [*]
+
+note right of EnMarche
+  Bateau qui navigue :
+  peut exposer un quai (-p),
+  monter un coffre (volume),
+  rejoindre un canal (réseau).
+end note
+
+note right of Arrete
+  Bateau à quai, éteint.
+  Les données d'un volume survivent ;
+  celles écrites sans volume sont
+  perdues au rm.
+end note
+
+@enduml

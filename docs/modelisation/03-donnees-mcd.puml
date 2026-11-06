@@ -1,0 +1,63 @@
+@startuml donnees-mcd
+' MCD (niveau métier) — entités et cardinalités — Docker Harbor
+' Rendu : plantuml 03-donnees-mcd.puml
+
+skinparam shadowing false
+hide circle
+skinparam linetype ortho
+title MCD — Docker Harbor
+
+entity "JOUEUR" as JOUEUR {
+  * pseudo
+  * email
+  * motDePasseHash
+}
+entity "STAGE" as STAGE {
+  * numero
+  titre
+}
+entity "CHAPITRE" as CHAPITRE {
+  * numero
+  titre
+}
+entity "NIVEAU" as NIVEAU {
+  * ordre
+  consigne
+  etatInitial
+  conditionsReussite
+}
+entity "PROGRESSION" as PROGRESSION {
+  statut
+  etoiles
+  nbEssais
+  nbIndices
+}
+entity "EPREUVE" as EPREUVE {
+  titre
+}
+entity "SCORE_EPREUVE" as SCORE {
+  tempsMs
+  score
+}
+entity "ACHIEVEMENT" as ACHIEVEMENT {
+  * code
+  titre
+}
+
+' Cardinalités (style Merise : 1 = exactement un, N = plusieurs)
+JOUEUR   ||--o{ PROGRESSION : possède
+NIVEAU   ||--o{ PROGRESSION : "est joué dans"
+STAGE    ||--o{ CHAPITRE    : contient
+CHAPITRE ||--o{ NIVEAU      : regroupe
+JOUEUR   ||--o{ SCORE       : réalise
+EPREUVE  ||--o{ SCORE       : reçoit
+NIVEAU   ||--o| EPREUVE     : "sert de base à"
+JOUEUR   }o--o{ ACHIEVEMENT : débloque
+
+note bottom of PROGRESSION
+  Un Joueur a 0..N Progressions ;
+  chaque Progression appartient à
+  exactement 1 Joueur et 1 Niveau.
+end note
+
+@enduml

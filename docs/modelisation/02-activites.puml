@@ -1,0 +1,51 @@
+@startuml activites-jouer-niveau
+' Diagramme d'activités — « Jouer un niveau » (notation UML stricte)
+' Swimlanes = responsabilités ; fork/join = parallélisme.
+' Rendu : plantuml 02-activites.puml  (ou extension VS Code PlantUML)
+
+skinparam shadowing false
+title Activités — Jouer un niveau
+
+|Joueur|
+start
+:Ouvrir le niveau;
+
+repeat
+  |Joueur|
+  :Saisir une commande\nou éditer un fichier;
+
+  |Front (Nuxt)|
+  :Envoyer la commande à l'API;
+
+  |Serveur (API + Simulateur)|
+  :Analyser la commande;
+  if (Commande valide ?) then (oui)
+    :Mettre à jour l'état du port\n(images / conteneurs / ports…);
+    if (Objectif atteint ?) then (oui)
+      :Calculer les étoiles\n(essais + indices);
+      fork
+        |MongoDB|
+        :Enregistrer la progression\n+ étoiles;
+      fork again
+        |MongoDB|
+        :Évaluer les achievements;
+      end fork
+      |Front (Nuxt)|
+      :Afficher la réussite\n(1 à 3 étoiles);
+      stop
+    else (non)
+    endif
+  else (non)
+    :Produire une erreur réaliste\n(état inchangé);
+  endif
+
+  |Front (Nuxt)|
+  :Afficher le résultat\n+ animer la scène du port;
+
+  |Joueur|
+  backward:Demander un indice (si bloqué);
+repeat while (Continuer à jouer ?) is (oui)
+->non;
+stop
+
+@enduml

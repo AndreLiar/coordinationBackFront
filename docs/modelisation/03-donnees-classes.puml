@@ -1,0 +1,117 @@
+@startuml donnees-classes
+' Diagramme de classes (niveau application / domaine) — Docker Harbor
+' Rendu : plantuml 03-donnees-classes.puml
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+title Diagramme de classes — Docker Harbor
+
+enum StatutProgression {
+  VERROUILLE
+  DEBLOQUE
+  EN_COURS
+  REUSSI
+}
+
+enum StatutConteneur {
+  CREE
+  EN_MARCHE
+  ARRETE
+  SUPPRIME
+}
+
+class Joueur {
+  +id : string
+  +pseudo : string
+  +email : string
+  -motDePasseHash : string
+  +verifierMotDePasse(clair) : bool
+}
+
+class Progression {
+  +id : string
+  -statut : StatutProgression
+  -etoiles : int
+  -nbEssais : int
+  -nbIndices : int
+  -meilleurTempsMs : int
+  +debloquer() : void
+  +enregistrerEssai() : void
+  +reussir(etoiles) : void
+}
+
+class Niveau {
+  +id : string
+  +ordre : int
+  +consigne : string
+  +etatInitial : EtatPort
+  +conditionsReussite : Objectif[]
+  +indices : Indice[]
+  +verifierObjectif(etat) : bool
+  +calculerEtoiles(essais, indices) : int
+}
+
+class EtatPort {
+  +images : Image[]
+  +conteneurs : Conteneur[]
+  +volumes : Volume[]
+  +reseaux : Reseau[]
+  +appliquer(cmd) : ResultatCommande
+}
+
+class Conteneur {
+  +id : string
+  +nom : string
+  +image : string
+  -statut : StatutConteneur
+  +portsExposes : PortMapping[]
+  +demarrer() : void
+  +arreter() : void
+  +supprimer() : void
+}
+
+class Image {
+  +nom : string
+  +tag : string
+}
+
+class Volume {
+  +nom : string
+}
+
+class Reseau {
+  +nom : string
+  +conteneurs : string[]
+}
+
+class Indice {
+  +palier : int
+  +texte : string
+  +penaliteEtoile : int
+}
+
+class Achievement {
+  +code : string
+  +titre : string
+  +estDebloque(joueur) : bool
+}
+
+' Associations
+Joueur "1" --> "0..*" Progression : suit
+Niveau "1" --> "0..*" Progression : concerne
+Joueur "0..*" --> "0..*" Achievement : débloque
+
+' Composition (losange plein) : le tout possède les parties
+Niveau "1" *-- "1" EtatPort : état de départ
+EtatPort "1" *-- "0..*" Conteneur
+EtatPort "1" *-- "0..*" Image
+EtatPort "1" *-- "0..*" Volume
+EtatPort "1" *-- "0..*" Reseau
+
+' Agrégation (losange creux) : référence réutilisable
+Niveau "1" o-- "0..*" Indice : propose
+
+Progression ..> StatutProgression
+Conteneur ..> StatutConteneur
+
+@enduml

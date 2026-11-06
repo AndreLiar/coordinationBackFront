@@ -1,0 +1,13 @@
+# Dépendances
+node_modules/
+# Build / sortie
+dist/
+.output/
+.nuxt/
+# Env
+.env
+.env.*
+!.env.example
+# Logs & OS
+*.log
+.DS_Store

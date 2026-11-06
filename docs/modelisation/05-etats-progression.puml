@@ -1,0 +1,22 @@
+@startuml etats-progression
+' Machine à états — cycle de vie d'une Progression (déblocage + étoiles)
+' Rendu : plantuml 05-etats-progression.puml
+
+skinparam shadowing false
+title États-transitions — Progression d'un niveau
+
+[*] --> Verrouille
+Verrouille --> Debloque : chapitre précédent terminé
+Debloque --> EnCours : le joueur ouvre le niveau
+EnCours --> EnCours : nouvel essai / indice demandé
+EnCours --> Reussi : objectif atteint
+Reussi --> EnCours : rejouer pour améliorer les étoiles
+Reussi --> [*]
+
+note right of Reussi
+  1 à 3 étoiles = f(nbEssais, nbIndices).
+  Déclenche l'évaluation des achievements
+  et peut débloquer le niveau suivant.
+end note
+
+@enduml
