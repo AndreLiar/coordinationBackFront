@@ -45,7 +45,7 @@ else commande valide
     Niv -> Niv : calculerEtoiles(essais, indices)
     Niv --> UC : true, etoiles
     deactivate Niv
-    par Persistance en parallèle
+    par Persistance concurrente (Promise.all — I/O, pas de thread)
       UC -> DB : enregistrer progression (statut=REUSSI, étoiles)
     else
       UC -> DB : évaluer + débloquer achievements

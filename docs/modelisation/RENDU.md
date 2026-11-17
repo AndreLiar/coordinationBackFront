@@ -30,7 +30,7 @@ Les acteurs (**Visiteur**, **Joueur** qui en hérite) et les services rendus par
 - `<<include>>` — comportement **obligatoire** : « Jouer un niveau » inclut toujours « Exécuter une commande » et « Vérifier l'objectif ».
 - `<<extend>>` — comportement **conditionnel** : « Demander un indice » ou « Débloquer un achievement » n'arrivent que sous condition.
 - **Généralisation** : tout `Joueur` est aussi un `Visiteur`.
-- **MongoDB** apparaît en acteur secondaire (persistance).
+- **Pas d'acteur « MongoDB »** : une base de persistance ne rend aucun service métier ni ne fait de calcul — ce n'est pas un acteur secondaire. Elle apparaît dans les vues de réalisation (séquence, activités), pas dans cette vue fonctionnelle.
 
 ---
 
@@ -38,11 +38,11 @@ Les acteurs (**Visiteur**, **Joueur** qui en hérite) et les services rendus par
 
 ![Activités](img/activites-jouer-niveau.png)
 
-Le déroulé d'une partie, avec les **responsabilités** (swimlanes) et le **parallélisme**.
+Le déroulé d'une partie, avec les **responsabilités** (swimlanes) et la **concurrence asynchrone**.
 
 - **Swimlanes** : Joueur / Front (Nuxt) / Serveur (API + Simulateur) / MongoDB.
 - **Décisions** : « Commande valide ? », « Objectif atteint ? », « Bloqué ? ».
-- **Fork / Join** : à la réussite, l'enregistrement de la progression **et** l'évaluation des achievements se font en parallèle.
+- **Fork / Join** : à la réussite, l'enregistrement de la progression **et** l'évaluation des achievements sont lancés ensemble via `Promise.all`. ⚠️ Node étant **mono-thread**, il s'agit de **concurrence asynchrone** (recouvrement des I/O MongoDB), **pas** de parallélisme CPU.
 - Toute la **validation et le calcul des étoiles sont côté serveur** (anti-triche).
 
 ---
@@ -80,7 +80,7 @@ La structure logicielle : on ajoute les **comportements** (méthodes) et les **i
 Les échanges entre couches : **Controller → Use Case → Domaine → Repository (MongoDB)**.
 
 - Fragment `alt` : commande invalide (erreur réaliste, état inchangé) vs valide ; objectif atteint vs non.
-- Fragment `par` : enregistrement de la progression **et** des achievements en parallèle.
+- Fragment `par` : enregistrement de la progression **et** des achievements lancés ensemble (`Promise.all`) — concurrence asynchrone (I/O), pas de thread.
 - La vérification de l'objectif, les étoiles et l'état du port sont produits par le **serveur** ; le front affiche seulement.
 
 ---

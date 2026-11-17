@@ -9,7 +9,9 @@ title Cas d'utilisation — Docker Harbor
 
 actor "Visiteur" as Visiteur
 actor "Joueur" as Joueur
-actor "MongoDB" as DB << système >>
+' Pas d'acteur « MongoDB » : une base de persistance ne rend aucun service métier
+' ni ne réalise de calcul — ce n'est pas un acteur secondaire, juste un détail interne
+' (visible dans les diagrammes de séquence / activités, pas dans la vue fonctionnelle).
 
 ' Généralisation : tout Joueur est aussi un Visiteur
 Joueur --|> Visiteur
@@ -53,10 +55,5 @@ UC_epreuve ..> UC_score : <<include>>
 UC_indice ..> UC_jouer : <<extend>>
 UC_editer ..> UC_jouer : <<extend>>
 UC_achiev ..> UC_jouer : <<extend>>
-
-' Acteur secondaire : persistance
-UC_valid -- DB
-UC_score -- DB
-UC_profil -- DB
 
 @enduml

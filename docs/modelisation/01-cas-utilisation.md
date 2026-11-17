@@ -5,6 +5,9 @@
 > *Qui utilise le jeu, quelles actions sont possibles, où s'arrêtent les responsabilités du système.*
 > Mermaid n'a pas de notation « use case » native : les acteurs sont des nœuds à l'extérieur,
 > les cas d'utilisation sont des ellipses `(( ))` dans la frontière du système.
+> **MongoDB n'est pas un acteur** : une base de persistance ne rend aucun service métier
+> ni ne réalise de calcul. Elle apparaît dans les vues de réalisation (séquence, activités),
+> pas dans cette vue fonctionnelle.
 
 ```mermaid
 flowchart LR
@@ -30,8 +33,6 @@ flowchart LR
         UC_achiev(("Débloquer un achievement"))
     end
 
-    MongoDB[(MongoDB)]
-
     Visiteur --- UC_insc
     Visiteur --- UC_conn
 
@@ -52,10 +53,6 @@ flowchart LR
     UC_indice -. extend .-> UC_jouer
     UC_editer -. extend .-> UC_jouer
     UC_achiev -. extend .-> UC_jouer
-
-    UC_valid --- MongoDB
-    UC_score --- MongoDB
-    UC_profil --- MongoDB
 ```
 
 ## Lecture des relations

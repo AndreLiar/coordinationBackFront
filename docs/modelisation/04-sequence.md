@@ -48,7 +48,7 @@ sequenceDiagram
             Niv->>Niv: calculerEtoiles(essais, indices)
             Niv-->>UC: true, etoiles
             deactivate Niv
-            par Persistance en parallèle
+            par Persistance concurrente (Promise.all — I/O, pas de thread)
                 UC->>DB: enregistrer progression (statut=REUSSI, étoiles)
             and
                 UC->>DB: évaluer + débloquer achievements
@@ -67,7 +67,7 @@ sequenceDiagram
 | Fragment | Usage ici |
 | --- | --- |
 | `alt` | commande invalide vs valide ; objectif atteint vs non |
-| `par` | enregistrement de la progression **et** évaluation des achievements en parallèle |
+| `par` | enregistrement de la progression **et** évaluation des achievements lancés ensemble via `Promise.all` — **concurrence asynchrone** (recouvrement des I/O), pas de parallélisme CPU : Node est mono-thread |
 
 > La **vérification de l'objectif**, le **calcul des étoiles** et l'**état du port** sont produits
 > par le serveur. Le front ne fait qu'afficher ce qu'il reçoit → impossible de tricher côté client.

@@ -2,7 +2,7 @@
 
 [← Cas d'utilisation](./01-cas-utilisation.md) · [Index](./README.md) · [Données →](./03-donnees.md)
 
-> *Comment se déroule le processus, quelles décisions, quelles tâches en parallèle,
+> *Comment se déroule le processus, quelles décisions, quelles tâches concurrentes,
 > et **qui fait quoi** (swimlanes = responsabilités).*
 
 ```mermaid
@@ -50,7 +50,7 @@ flowchart TD
     objectif -- non --> afficher --> choixIndice
     objectif -- oui --> etoiles --> sauver
 
-    %% Fork : deux écritures en parallèle une fois le niveau réussi
+    %% Fork : deux écritures Mongo concurrentes (Promise.all) une fois le niveau réussi
     sauver --> fork(( ))
     fork --> achiev
     fork --> afficherFin["Afficher la réussite<br/>(1 à 3 étoiles)"]
@@ -62,5 +62,6 @@ flowchart TD
 ## Mécanismes UML illustrés
 
 - **Decision / Merge** (`{ }`) : « Commande valide ? », « Objectif atteint ? », « Bloqué ? » — un seul chemin est suivi.
-- **Fork / Join** (`(( ))`) : après la réussite, l'enregistrement de la progression et l'évaluation des achievements se font **en parallèle**, puis on **synchronise** (join) avant la fin.
+- **Fork / Join** (`(( ))`) : après la réussite, l'enregistrement de la progression et l'évaluation des achievements sont **lancés ensemble** (`Promise.all`), puis on **synchronise** (join) avant la fin.
+  > ⚠️ **Précision technique** (back TypeScript / Node) : Node est **mono-thread**. Le fork ne représente **pas** du parallélisme CPU mais de la **concurrence asynchrone** : les deux I/O MongoDB sont émises simultanément et leurs temps d'attente se **recouvrent** via la boucle d'événements. C'est ce qu'exprime `await Promise.all([enregistrerProgression(), évaluerAchievements()])`. Du vrai parallélisme CPU exigerait des *Worker Threads*, inutiles ici (on attend des I/O, pas du calcul).
 - **Swimlanes** : chaque action est rattachée à son responsable (Joueur / Front / Serveur / MongoDB), ce qui montre bien que **toute la validation et le calcul des étoiles sont côté serveur** (anti-triche).

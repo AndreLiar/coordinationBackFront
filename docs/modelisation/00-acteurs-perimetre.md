@@ -2,12 +2,12 @@
 
 [← Index](./README.md)
 
-| Acteur | Rôle |
+| Élément | Rôle |
 | --- | --- |
-| **Visiteur** | Personne non connectée : peut s'inscrire et se connecter. |
-| **Joueur** | Visiteur authentifié : joue la campagne, les épreuves, consulte son profil. *(hérite de Visiteur)* |
-| **Serveur de jeu** (API Express + Simulateur) | Simule Docker, valide les objectifs, calcule scores/étoiles. Acteur **interne** au système. |
-| **MongoDB** | Système externe de persistance (comptes, progression, scores). |
+| **Visiteur** *(acteur)* | Personne non connectée : peut s'inscrire et se connecter. |
+| **Joueur** *(acteur)* | Visiteur authentifié : joue la campagne, les épreuves, consulte son profil. *(hérite de Visiteur)* |
+| **Serveur de jeu** (API Express + Simulateur) | Cœur **interne** du système : simule Docker, valide les objectifs, calcule scores/étoiles. Pas un acteur. |
+| **MongoDB** | **Système de support** (persistance : comptes, progression, scores). **Pas un acteur** : aucune logique métier ni calcul — simple dépendance technique montrée ici pour le périmètre. |
 
 Le système ne lance **aucun vrai Docker** : le « Simulateur » tient un état fictif
 (images, conteneurs, ports, volumes, réseaux) et répond comme le ferait Docker, erreurs comprises.

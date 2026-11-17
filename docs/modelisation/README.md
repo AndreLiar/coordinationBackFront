@@ -77,7 +77,9 @@ Choix retenus (simples et efficaces pour MongoDB sur un périmètre de 2 mois) :
 2. **Une épreuve chronométrée est un Niveau** de `type = EPREUVE` (discriminateur), pas une
    entité séparée. Les `scores` référencent directement `niveauId`. Une entité en moins.
 3. **Pas d'acteur Admin.** Les niveaux et épreuves sont des **données** (seeding par les devs),
-   hors du périmètre runtime du jeu. Acteurs = `Visiteur`, `Joueur` (+ `MongoDB` en support).
+   hors du périmètre runtime du jeu. Acteurs = `Visiteur`, `Joueur`. **MongoDB n'est pas un
+   acteur** (persistance sans service métier ni calcul) : elle n'apparaît que dans les vues de
+   réalisation (séquence, activités).
 
 ## Notes transverses
 

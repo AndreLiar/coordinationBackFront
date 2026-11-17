@@ -1,6 +1,6 @@
 @startuml activites-jouer-niveau
 ' Diagramme d'activités — « Jouer un niveau » (notation UML stricte)
-' Swimlanes = responsabilités ; fork/join = parallélisme.
+' Swimlanes = responsabilités ; fork/join = concurrence asynchrone (Promise.all), pas de thread.
 ' Rendu : plantuml 02-activites.puml  (ou extension VS Code PlantUML)
 
 skinparam shadowing false
@@ -23,6 +23,12 @@ repeat
     :Mettre à jour l'état du port\n(images / conteneurs / ports…);
     if (Objectif atteint ?) then (oui)
       :Calculer les étoiles\n(essais + indices);
+      note right
+        Concurrence asynchrone (Promise.all) :
+        les 2 écritures Mongo sont lancées ensemble.
+        Node reste mono-thread — recouvrement des
+        I/O, **pas** de parallélisme CPU.
+      end note
       fork
         |MongoDB|
         :Enregistrer la progression\n+ étoiles;
